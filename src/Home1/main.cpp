@@ -77,6 +77,18 @@ Eigen::Matrix4f get_projection_matrix(float eye_fov, float aspect_ratio,
 	return projection;
 }
 
+Eigen::Matrix4f get_rotation(Eigen::Vector3f  axis, float anger)
+{
+	axis.normalize();
+	Eigen::AngleAxisf rotation(anger / 180 * MY_PI, axis);
+	Eigen::Matrix3f rotation_matrix = rotation.toRotationMatrix();
+
+	Eigen::Matrix4f rotation_4f = Eigen::Matrix4f::Identity();
+	rotation_4f.block<3, 3>(0, 0) = rotation_matrix;
+	return rotation_4f;
+
+}
+
 int main(int argc, const char** argv)
 {
 	float angle = 0;
@@ -107,6 +119,9 @@ int main(int argc, const char** argv)
 	int key = 0;
 	int frame_count = 0;
 
+	int rotation_anger = 0; // 0 for x, 1 for y, 2 for z
+	Eigen::Vector3f rotation_axis = { 1, 1, 1 }; // default rotation around z-axis10, 0, 1 }; // default rotation around z-axis
+
 	if (command_line) {
 		r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
@@ -126,7 +141,10 @@ int main(int argc, const char** argv)
 	while (key != 27) {
 		r.clear(rst::Buffers::Color | rst::Buffers::Depth);
 
-		r.set_model(get_model_matrix(angle));
+		Eigen::Matrix4f model_matrix = get_model_matrix(angle);
+		model_matrix = model_matrix * get_rotation(rotation_axis, rotation_anger);
+
+		r.set_model(model_matrix);
 		r.set_view(get_view_matrix(eye_pos));
 		r.set_projection(get_projection_matrix(45, 1, 0.1, 50));
 
@@ -142,10 +160,17 @@ int main(int argc, const char** argv)
 
 		if (key == 'a') {
 			angle += 10;
-			std::cout << "A  Key On the way" << key << std::endl;
+			//std::cout << "A  Key On the way" << key << std::endl;
 		}
 		else if (key == 'd') {
 			angle -= 10;
+		}
+		if (key == 'q') {
+			rotation_anger += 10;
+			std::cout << "q  Key On the way" << rotation_anger << std::endl;
+		}
+		else if (key == 'e') {
+			rotation_anger -= 10;
 		}
 	}
 

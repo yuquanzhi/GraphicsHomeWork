@@ -5,3 +5,4 @@ bin-int/
 *.user
 vendor/opencv/
 vendor/eigen-3.4.0
+vendor/glm
