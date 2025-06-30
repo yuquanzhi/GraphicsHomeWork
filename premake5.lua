@@ -10,3 +10,4 @@ outputdir="%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 include "Home1.lua"
 include "Home2.lua"
+include "Home3.lua"

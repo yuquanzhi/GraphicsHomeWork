@@ -1,6 +1,6 @@
-project "Home1"
+project "Home3"
 	
-	location "Home1"
+	location "src/%{prj.name}"
 	kind "ConsoleApp"
 		language "C++"
 		staticruntime "On"
@@ -11,13 +11,13 @@ project "Home1"
 
 		files
 		{
-			"src/Home1/**.hpp",
-			"src/Home1/**.cpp",
+			"src/%{prj.name}/**.hpp",
+			"src/%{prj.name}/**.cpp",
 		}
 		includedirs
 		{
 			"vendor/opencv/build/include",
-			"vendor/eigen-3.4.0/Eigen"
+			"vendor/eigen-3.4.0/Eigen",
 		}
 		libdirs
 		{

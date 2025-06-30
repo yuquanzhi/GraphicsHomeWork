@@ -128,27 +128,62 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
 	int y_max = static_cast<int>(std::ceil(max_pt.y()));
 	for (int x = x_min; x <= x_max; ++x) {
 		for (int y = y_min; y <= y_max; ++y) {
-			// TODO : If the pixel is inside the triangle, use the following code to get the interpolated z value.
-			if (insideTriangle(x + 0.5f, y + 0.5f, t.v)) {
-				// TODO : Interpolate the z value of the current pixel.
-				// If you have implemented the computeBarycentric2D function, you can use it to compute alpha, beta, gamma.
-				// Then use them to compute the interpolated z value.
-				// auto [alpha, beta, gamma] = computeBarycentric2D(x + 0.5f, y + 0.5f, t.v);
-				// float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
-				// z_interpolated *= 1.0f / (alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
-				auto [alpha, beta, gamma] = computeBarycentric2D(x + 0.5f, y + 0.5f, t.v);
-				float w_reciprocal = 1.0f / (alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
-				float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
-				z_interpolated *= w_reciprocal;
-				// TODO : If the interpolated z value is smaller than the current depth buffer value, update the color and depth buffer.
-				int ind = get_index(x, y);
-				if (z_interpolated < depth_buf[ind]) {
-					depth_buf[ind] = z_interpolated;
-					// Set the pixel color to the color of the triangle
-					Eigen::Vector3f color = t.getColor();
-					set_pixel(Eigen::Vector3f(x, y, 1.0f), color);
+			//// TODO : If the pixel is inside the triangle, use the following code to get the interpolated z value.
+			//if (insideTriangle(x + 0.5f, y + 0.5f, t.v)) {
+			//	// TODO : Interpolate the z value of the current pixel.
+			//	// If you have implemented the computeBarycentric2D function, you can use it to compute alpha, beta, gamma.
+			//	// Then use them to compute the interpolated z value.
+			//	// auto [alpha, beta, gamma] = computeBarycentric2D(x + 0.5f, y + 0.5f, t.v);
+			//	// float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
+			//	// z_interpolated *= 1.0f / (alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
+			//	auto [alpha, beta, gamma] = computeBarycentric2D(x + 0.5f, y + 0.5f, t.v);
+			//	float w_reciprocal = 1.0f / (alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
+			//	float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
+			//	z_interpolated *= w_reciprocal;
+			//	// TODO : If the interpolated z value is smaller than the current depth buffer value, update the color and depth buffer.
+			//	int ind = get_index(x, y);
+			//	if (z_interpolated < depth_buf[ind]) {
+			//		depth_buf[ind] = z_interpolated;
+			//		// Set the pixel color to the color of the triangle
+			//		Eigen::Vector3f color = t.getColor();
+			//		set_pixel(Eigen::Vector3f(x, y, 1.0f), color);
+			//	}
+			//}
+            bool is_Render = false;
+			int count = 0;
+            for (int i = 0; i < 4; i++)
+            {
+				//超级采样
+				if (insideTriangle(x +0.25f + (i % 2) * 0.5f, y + 0.25f + (i / 2) * 0.5f, t.v)) {
+                    
+					auto [alpha, beta, gamma] = computeBarycentric2D(x + 0.25f + (i % 2) * 0.5f, y + 0.25f + (i / 2) * 0.5f, t.v);
+					float w_reciprocal = 1.0f / (alpha / v[0].w() + beta / v[1].w() + gamma / v[2].w());
+					float z_interpolated = alpha * v[0].z() / v[0].w() + beta * v[1].z() / v[1].w() + gamma * v[2].z() / v[2].w();
+					z_interpolated *= w_reciprocal;
+					int ind = get_index(x, y);
+					if (z_interpolated < super_sample_depth_buf[ind][i]) {
+						count++;
+                        is_Render = true;
+						super_sample_depth_buf[ind][i] = z_interpolated;
+						super_sample_buf[ind][i] = t.getColor();
+					}
 				}
-			}
+            }
+            //超级采样完成 进行像素混合
+            if (is_Render)
+            {
+
+				Eigen::Vector3f color(0, 0, 0);
+                for (int i = 0; i < 4; i++)
+                {
+                    color += super_sample_buf[get_index(x, y)][i];
+				}				
+                color /= count; //平均颜色
+				Eigen::Vector3f pixel_pos(x, y, 1.0f);
+				set_pixel(pixel_pos, color);
+
+            }
+
 		}
 	}
 
@@ -188,12 +223,19 @@ void rst::rasterizer::clear(rst::Buffers buff)
     {
         std::fill(depth_buf.begin(), depth_buf.end(), std::numeric_limits<float>::infinity());
     }
+    std::fill(super_sample_buf.begin(), super_sample_buf.end(), std::vector<Eigen::Vector3f>(4, Eigen::Vector3f(0, 0, 0)));
+	std::fill(super_sample_depth_buf.begin(), super_sample_depth_buf.end(), std::vector<float>(4, std::numeric_limits<float>::infinity()));
 }
 
 rst::rasterizer::rasterizer(int w, int h) : width(w), height(h)
 {
     frame_buf.resize(w * h);
     depth_buf.resize(w * h);
+    //对超级采样进行初始化
+	super_sample_buf = std::vector<std::vector<Eigen::Vector3f>>(w * h, std::vector<Eigen::Vector3f>(4, Eigen::Vector3f(0, 0, 0)));
+	super_sample_depth_buf = std::vector<std::vector<float>>(w * h, std::vector<float>(4, std::numeric_limits<float>::infinity()));
+
+
 }
 
 int rst::rasterizer::get_index(int x, int y)
