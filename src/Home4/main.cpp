@@ -27,6 +27,50 @@ void naive_bezier(const std::vector<cv::Point2f> &points, cv::Mat &window)
                  3 * std::pow(t, 2) * (1 - t) * p_2 + std::pow(t, 3) * p_3;
 
         window.at<cv::Vec3b>(point.y, point.x)[2] = 255;
+
+		//对于像素相邻的像素 需要计算点对应的颜色
+		
+        int x = static_cast<int>(std::floor( point.x));
+		int y = static_cast<int>(std::floor(point.y));
+		//对向上的像素进行赋值
+        if (y - 1 >= 0)
+        {
+            float temp= window.at<cv::Vec3b>(y - 1, x)[2];
+			//计算和当前点的距离
+			float distance = std::sqrt(std::pow(point.x - x-0.5, 2) + std::pow(point.y - (y - 1)-0.5, 2));
+			window.at<cv::Vec3b>(y - 1, x)[2] = static_cast<uchar>(std::max(temp,  (1 - distance) * 255));
+
+        }
+		//对向下的像素进行赋值
+        if (y + 1 < window.rows)
+        {
+            float temp = window.at<cv::Vec3b>(y + 1, x)[2];
+            float distance = std::sqrt(std::pow(point.x - x - 0.5, 2) + std::pow(point.y - (y + 1) - 0.5, 2));
+            window.at<cv::Vec3b>(y + 1, x)[2] = static_cast<uchar>(std::max(temp, (1 - distance) * 255));
+
+        }
+		//对向左的像素进行赋值
+		if (x - 1 >= 0)
+		{
+			float temp = window.at<cv::Vec3b>(y, x - 1)[2];
+			float distance = std::sqrt(std::pow(point.x - (x - 1) - 0.5, 2) + std::pow(point.y - y - 0.5, 2));
+			window.at<cv::Vec3b>(y, x - 1)[2] = static_cast<uchar>(std::max(temp, (1 - distance) * 255));
+		}
+		//对向右的像素进行赋值
+        if (x + 1 < window.cols)
+        {
+            float temp = window.at<cv::Vec3b>(y, x + 1)[2];
+            float distance = std::sqrt(std::pow(point.x - (x + 1) - 0.5, 2) + std::pow(point.y - y - 0.5, 2));
+            window.at<cv::Vec3b>(y, x + 1)[2] = static_cast<uchar>(std::max(temp, (1 - distance) * 255));
+
+        }
+
+
+
+
+
+
+
     }
 }
 
@@ -92,8 +136,8 @@ int main()
 
         if (control_points.size() == 4) 
         {
-            //naive_bezier(control_points, window);
-               bezier(control_points, window);
+            naive_bezier(control_points, window);
+              // bezier(control_points, window);
 
             cv::imshow("Bezier Curve", window);
             cv::imwrite("my_bezier_curve.png", window);
