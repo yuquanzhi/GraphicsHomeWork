@@ -18,6 +18,7 @@ project "Home7"
 		{
 			"vendor/opencv/build/include",
 			"vendor/eigen-3.4.0/Eigen",
+			"vendor/glm"
 		}
 		libdirs
 		{

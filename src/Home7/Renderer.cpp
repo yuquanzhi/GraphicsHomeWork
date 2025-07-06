@@ -42,9 +42,9 @@ void Renderer::Render(const Scene& scene)
 				Vector3f dir = normalize(Vector3f(-x, y, 1));
 				for (int k = 0; k < spp; k++) {
 
-					//Vector3f color = scene.castRayTest(Ray(eye_pos, dir), 0);
+					Vector3f color = scene.castRay(Ray(eye_pos, dir), 0);
 
-					framebuffer[j * scene.width + i] += scene.castRayTest(Ray(eye_pos, dir), 0) / spp;
+					framebuffer[j * scene.width + i] += color / spp;
 				}
 				completedTasks_++;
 				//UpdateProgress(completedTasks_ /((float)scene.width * scene.height) );

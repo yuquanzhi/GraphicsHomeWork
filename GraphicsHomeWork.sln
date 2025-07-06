@@ -15,6 +15,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Home6", "src\Home6\Home6.vc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Home7", "src\Home7\Home7.vcxproj", "{659F540D-D1B3-7CBE-9A35-201E060979EF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Home8", "src\Home8\Home8.vcxproj", "{669F540D-D2B3-7CBE-9B35-201E070979EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -64,6 +66,12 @@ Global
 		{659F540D-D1B3-7CBE-9A35-201E060979EF}.Dist|x64.Build.0 = Dist|x64
 		{659F540D-D1B3-7CBE-9A35-201E060979EF}.Release|x64.ActiveCfg = Release|x64
 		{659F540D-D1B3-7CBE-9A35-201E060979EF}.Release|x64.Build.0 = Release|x64
+		{669F540D-D2B3-7CBE-9B35-201E070979EF}.Debug|x64.ActiveCfg = Debug|x64
+		{669F540D-D2B3-7CBE-9B35-201E070979EF}.Debug|x64.Build.0 = Debug|x64
+		{669F540D-D2B3-7CBE-9B35-201E070979EF}.Dist|x64.ActiveCfg = Dist|x64
+		{669F540D-D2B3-7CBE-9B35-201E070979EF}.Dist|x64.Build.0 = Dist|x64
+		{669F540D-D2B3-7CBE-9B35-201E070979EF}.Release|x64.ActiveCfg = Release|x64
+		{669F540D-D2B3-7CBE-9B35-201E070979EF}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
